@@ -14,7 +14,10 @@ This guide complements rather than replaces the MuleSoft product documentation. 
 
 This guide applies to Flex Gateway versions 1.5.3 through 1.8.x, running in connected mode as a Docker container on Linux. It uses the `flexctl registration create` command introduced in version 1.5.3. Earlier versions use different registration syntax and are outside the scope of this guide.
 
-The procedure registers one Flex Gateway instance and starts one associated replica for illustrative purposes.
+The procedure registers one Flex Gateway instance and starts one associated replica for illustrative purposes. It was validated using the following combinations:
+
+- Flex Gateway 1.6.0 on Ubuntu 26.04 LTS
+- Flex Gateway 1.8.3 on Red Hat Enterprise Linux 9.8
 
 ### Out of Scope
 
@@ -64,7 +67,7 @@ This guide follows the high-level process presented in Anypoint Runtime Manager 
 Before starting, it is crucial to understand that a Flex Gateway instance is tied to:
 
 1. An Anypoint organization or business group.
-2. An Anypoint environment, such as Dev, Sandbox or Production.
+2. An Anypoint environment, such as Dev, Sandbox, or Production.
 
 <img src="images/docker-00-add-flex-gateway-home.png" style="width:6.5in"/>
 
@@ -77,7 +80,7 @@ The example in the screen capture uses the **Logistics** business group and the 
 
 Step 1 of the Anypoint Runtime Manager generic instructions consists of downloading the Docker image of Flex Gateway from Docker Hub.
 
-1. Connect to the Linux server using SSH and change to the `FLEX_HOME` directory—for example:
+1. Connect to the Linux host using SSH and change to the `FLEX_HOME` directory—for example:
 
    ```bash
    export FLEX_HOME="$HOME/flex"
@@ -202,21 +205,29 @@ The following explains this command:
 
 - The `--rm` option instructs Docker to dispose of the container automatically when it stops.
 
-- By default, the container runs in the foreground and remains attached to the terminal. The container will stop if you press **Ctrl+C** or end the SSH session. Because the command includes `--rm`, Docker automatically deletes the stopped container.
+- By default, the container runs in the foreground and remains attached to the terminal. Pressing **Ctrl+C** sends an interrupt signal to the container and ordinarily stops it. Running the container in detached mode allows it to continue independently of the terminal session. Because the command includes `–rm`, Docker automatically removes the container after it stops.
 
-- The `-v` option creates a bind mount between the current directory on the Linux host to `/usr/local/share/mulesoft/flex-gateway/conf.d` within the container. The registration file and other optional configuration files present in the current directory become available to start and configure the Flex Gateway replica.
+- The `-v` option creates a bind mount from the current directory on the Linux host to `/usr/local/share/mulesoft/flex-gateway/conf.d` inside the container. The registration file and other optional configuration files present in the current directory become available to start and configure the Flex Gateway replica.
 
-- The `-p` option and `8081:8081` option instruct Docker to publish container port `8081` on the Linux host and map it to host port `8081`.
+- The generated command includes the -p 8081:8081 option, which publishes container port 8081 as port 8081 on the Linux host. Retain this mapping if the APIs managed by the Flex Gateway instance use container port 8081 for inbound requests.
 
-  Because both values are identical, it may not be obvious which side of the colon represents which port. The syntax is:
+  If an API is configured to listen on a different container port, add or replace the mapping using this syntax:
 
   ```text
   -p <host-port>:<container-port>
   ```
 
-  In the default command, `-p 8081:8081` implies Flex Gateway exposes and manages APIs on container port `8081` and has  Docker map it to port `8081` on the Linux host.
+  The host port is the port used by API clients to reach the Linux host. The container port must match the inbound port configured for the API in Flex Gateway.
 
-- `mulesoft/flex-gateway:1.6.0` is the name of the Docker image to run.
+  For example, the following mapping allows clients to connect to port 8080 on the Linux host while Flex Gateway receives the requests on container port 8081:
+
+  ```text
+  -p 8080:8081
+  ```
+
+  Publishing a port with Docker only forwards traffic to the container. It does not configure Flex Gateway or an API to listen on that port.
+
+- `mulesoft/flex-gateway:1.6.0` identifies the Docker image and the specific Flex Gateway version to run.
 
 Apply the following improvements to the generated `docker run` command:
 
@@ -231,16 +242,12 @@ Apply the following improvements to the generated `docker run` command:
   -v "$FLEX_HOME":/usr/local/share/mulesoft/flex-gateway/conf.d \
   ```
 
-- Optionally, replace `-p 8081:8081` with ports appropriate for your environment. You can publish additional ports by adding `-p <host-port>:<container-port>` for each port.
-
-  For example, assuming you want to manage APIs on ports `80`, `443`, and `5001`, replace `-p 8081:8081` with three port mappings: `-p 80:80 -p 443:443 -p 5001:5001`.
-
 The complete command, with these changes, is:
 
 ```bash
 sudo docker run -d --rm \
   -v "$FLEX_HOME":/usr/local/share/mulesoft/flex-gateway/conf.d \
-  -p 80:80 -p 443:443 -p 5001:5001 \
+  -p 8081:8081 \
   mulesoft/flex-gateway:1.6.0
 ```
 
@@ -260,4 +267,4 @@ In step 4, verify that the Flex Gateway replica connected successfully to the An
 
 ## Conclusion
 
-This guide outlined the high-level process detailed in Anypoint Runtime Manager for deploying Anypoint Flex Gateway with Docker Engine on Linux. It further included supplementary information regarding the required steps, commands, and their associated settings and configurations.
+This guide demonstrated how to register a Flex Gateway instance and start one associated replica using Docker Engine on Linux. It also explained the principal Docker and `flexctl` options used in the commands generated by Anypoint Runtime Manager.
