@@ -1,0 +1,18 @@
+# ================================================
+# Project: omni-gateway-deployment-guides
+# ================================================
+
+# macOS
+.DS_Store
+
+# Temporary and backup files
+*.orig
+*.tmp
+*.swp
+*.swo
+*.bak
+*~
+
+# Private and sensitive content
+_private/
+registration.yaml
