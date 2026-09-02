@@ -4,10 +4,10 @@ This repository provides self-contained guides for registering and running Anypo
 
 ## Guides
 
-| Guide | Description | Status |
-| --- | --- | --- |
-| [Docker Engine on Linux](docker-linux/README.md) | Register and run Flex Gateway as a Docker container on Linux. | Available |
-| Azure Kubernetes Service (AKS) | Register and run Flex Gateway on an AKS cluster. | Planned |
+| Guide | Description |
+| --- | --- |
+| [Docker Engine on Linux](docker-linux/README.md) | Register and run Flex Gateway as a Docker container on Linux. |
+| [Azure Kubernetes Service (AKS)](aks/README.md) | Register and run Flex Gateway on an AKS cluster. |
 
 ## Versions and Validation
 
